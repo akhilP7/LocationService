@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.schedule.appointment</groupId>
 	<artifactId>LocationService</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT-WorkingBranch</version>
 	<name>LocationService</name>
 	<description>Location Service project for Spring Boot</description>
 	<properties>
