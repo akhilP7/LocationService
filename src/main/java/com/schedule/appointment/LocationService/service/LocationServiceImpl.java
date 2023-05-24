@@ -51,6 +51,9 @@ public class LocationServiceImpl implements LocationService{
 
     @Override
     public List<LocationResponse> findAll() {
+
+        log.info("Retrieving location info for all locationIds");
+
         List<Location> locations = locationRepository.findAll();
         List<LocationResponse> locationResponses = new ArrayList<>();
 
