@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LocationServiceCustomException extends RuntimeException{
+public class ResourceServiceCustomException extends RuntimeException{
 
     private String errorCode;
 
-    public LocationServiceCustomException(String message, String errorCode) {
+    public ResourceServiceCustomException(String message, String errorCode) {
         super(message);
         this.errorCode = errorCode;
     }

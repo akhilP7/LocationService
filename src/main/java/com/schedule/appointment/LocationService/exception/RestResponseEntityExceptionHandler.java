@@ -18,4 +18,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                 .errorCode(exception.getErrorCode())
                 .build(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ResourceServiceCustomException.class)
+    public ResponseEntity<ErrorResponse> handleResourceServiceException(ResourceServiceCustomException exception){
+
+        return new ResponseEntity<>(new ErrorResponse().builder()
+                .errorMessage(exception.getMessage())
+                .errorCode(exception.getErrorCode())
+                .build(), HttpStatus.NOT_FOUND);
+    }
 }

@@ -2,6 +2,7 @@ package com.schedule.appointment.LocationService.service;
 
 import com.schedule.appointment.LocationService.entity.Location;
 import com.schedule.appointment.LocationService.exception.LocationServiceCustomException;
+import com.schedule.appointment.LocationService.exception.ResourceServiceCustomException;
 import com.schedule.appointment.LocationService.external.response.ResourceResponse;
 import com.schedule.appointment.LocationService.model.LocationRequest;
 import com.schedule.appointment.LocationService.model.LocationResponse;
@@ -10,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -50,25 +52,33 @@ public class LocationServiceImpl implements LocationService{
                         ()-> new LocationServiceCustomException("Location with given Id is not found","Location not found")
                 );
 
-        ResourceResponse resourceResponse =
-                restTemplate.getForObject("http://RESOURCE-SERVICE/resource/"+ location.getResourceId(),ResourceResponse.class);
-
-
-        LocationResponse.ResourceDetails resourceDetails = LocationResponse.ResourceDetails.builder()
-                .resourceType(resourceResponse.getResourceType())
-                .resourceMeaning(resourceResponse.getResourceMeaning())
-                .resourceId(resourceResponse.getResourceId())
-                .resourceAvailabilityDate(resourceResponse.getResourceAvailabilityDate())
-                .resourceAvailabilityStartTime(resourceResponse.getResourceAvailabilityStartTime())
-                .resourceAvailabilityEndTime(resourceResponse.getResourceAvailabilityEndTime())
-                .build();
-
         LocationResponse locationResponse =  LocationResponse.builder()
                 .locationId(location.getLocationId())
                 .locationMeaning(location.getLocationMeaning())
                 .build();
 
-        locationResponse.setResourceDetails(Collections.singletonList(resourceDetails));
+        if (location.getResourceId()>0){
+
+            try{
+                ResourceResponse resourceResponse =
+                        restTemplate.getForObject("http://RESOURCE-SERVICE/resource/"+ location.getResourceId(),ResourceResponse.class);
+
+
+                LocationResponse.ResourceDetails resourceDetails = LocationResponse.ResourceDetails.builder()
+                        .resourceType(resourceResponse.getResourceType())
+                        .resourceMeaning(resourceResponse.getResourceMeaning())
+                        .resourceId(resourceResponse.getResourceId())
+                        .resourceAvailabilityDate(resourceResponse.getResourceAvailabilityDate())
+                        .resourceAvailabilityStartTime(resourceResponse.getResourceAvailabilityStartTime())
+                        .resourceAvailabilityEndTime(resourceResponse.getResourceAvailabilityEndTime())
+                        .build();
+
+                locationResponse.setResourceDetails(Collections.singletonList(resourceDetails));
+            }
+            catch (HttpClientErrorException.NotFound exception){
+                throw new ResourceServiceCustomException("Resource Id in the given Location is not found", "Location not found");
+            }
+        }
 
         BeanUtils.copyProperties(location,locationResponse);
         return locationResponse;
@@ -91,16 +101,18 @@ public class LocationServiceImpl implements LocationService{
 
             if (resourceResponse != null){
                 for (ResourceResponse newResourceResponse : resourceResponse){
-                    LocationResponse.ResourceDetails resourceDetails = LocationResponse.ResourceDetails.builder()
-                            .resourceType(newResourceResponse.getResourceType())
-                            .resourceMeaning(newResourceResponse.getResourceMeaning())
-                            .resourceId(newResourceResponse.getResourceId())
-                            .resourceAvailabilityDate(newResourceResponse.getResourceAvailabilityDate())
-                            .resourceAvailabilityStartTime(newResourceResponse.getResourceAvailabilityStartTime())
-                            .resourceAvailabilityEndTime(newResourceResponse.getResourceAvailabilityEndTime())
-                            .build();
+                    if (newResourceResponse.getResourceId() > 0 && (newResourceResponse.getResourceId() == location.getResourceId())){
+                        LocationResponse.ResourceDetails resourceDetails = LocationResponse.ResourceDetails.builder()
+                                .resourceType(newResourceResponse.getResourceType())
+                                .resourceMeaning(newResourceResponse.getResourceMeaning())
+                                .resourceId(newResourceResponse.getResourceId())
+                                .resourceAvailabilityDate(newResourceResponse.getResourceAvailabilityDate())
+                                .resourceAvailabilityStartTime(newResourceResponse.getResourceAvailabilityStartTime())
+                                .resourceAvailabilityEndTime(newResourceResponse.getResourceAvailabilityEndTime())
+                                .build();
 
-                    resourceDetailsList.add(resourceDetails);
+                        resourceDetailsList.add(resourceDetails);
+                    }
                 }
             }
 

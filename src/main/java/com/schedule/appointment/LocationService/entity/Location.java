@@ -22,5 +22,5 @@ public class Location {
     private String locationMeaning;
 
     @Column(name = "RESOURCE_ID")
-    private String resourceId;
+    private long resourceId;
 }

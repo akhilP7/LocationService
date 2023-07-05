@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class LocationRequest {
 
     private String locationMeaning;
-    private String resourceId;
+    private long resourceId;
 }
